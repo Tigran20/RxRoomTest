@@ -9,22 +9,15 @@ import android.support.v7.widget.RecyclerView;
 import com.example.system.testroom.R;
 import com.example.system.testroom.adapter.DbAdapter;
 import com.example.system.testroom.bd.App;
-import com.example.system.testroom.bd.AppDatabase;
-import com.example.system.testroom.bd.EmployeeDao;
 import com.example.system.testroom.model.Employee;
 
-import java.util.List;
-
 import io.reactivex.Completable;
-import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
     private DbAdapter adapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,15 +31,12 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         FloatingActionButton floatingActionButton = findViewById(R.id.fab);
 
-        AppDatabase db = App.getInstance().getDatabase();
-        EmployeeDao employeeDao = db.employeeDao();
+        adapter = new DbAdapter(this);
 
-
-        adapter = new DbAdapter(null);
-
-        employeeDao.getAll()
+        App.getInstance(this).taskDao().getAll()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(newData -> {
+                    adapter.getEmployees();
                     adapter.setData(newData);
                 });
 
@@ -60,15 +50,15 @@ public class MainActivity extends AppCompatActivity {
             employee.setName("Alex Troy");
             employee.setSalary(23);
 
-            Completable.fromAction(() -> employeeDao
+            Completable.fromAction(() -> App.getInstance(this).taskDao()
                     .insert(employee))
                     .subscribeOn(Schedulers.io())
                     .subscribe();
 
-            employeeDao.getAll()
+            App.getInstance(this).taskDao().getAll()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(newData -> {
-
+                        adapter.getEmployees();
                         adapter.setData(newData);
                     });
         });

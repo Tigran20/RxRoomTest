@@ -1,5 +1,6 @@
 package com.example.system.testroom.adapter;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,8 +11,6 @@ import android.widget.TextView;
 
 import com.example.system.testroom.R;
 import com.example.system.testroom.bd.App;
-import com.example.system.testroom.bd.AppDatabase;
-import com.example.system.testroom.bd.EmployeeDao;
 import com.example.system.testroom.model.Employee;
 
 import java.util.List;
@@ -23,9 +22,10 @@ import io.reactivex.schedulers.Schedulers;
 public class DbAdapter extends RecyclerView.Adapter<DbAdapter.ViewHolder> {
 
     private List<Employee> mEmployees;
+    private Context context;
 
-    public DbAdapter(List<Employee> employees) {
-        mEmployees = employees;
+    public DbAdapter(Context context) {
+        this.context = context;
     }
 
     @NonNull
@@ -42,15 +42,12 @@ public class DbAdapter extends RecyclerView.Adapter<DbAdapter.ViewHolder> {
         holder.salary.setText(String.valueOf(employee.getSalary()));
 
         holder.delete.setOnClickListener(view -> {
-            AppDatabase db = App.getInstance().getDatabase();
-            EmployeeDao employeeDao = db.employeeDao();
-
-            Completable.fromAction(() -> employeeDao
+            Completable.fromAction(() -> App.getInstance(context).taskDao()
                     .delete(employee))
                     .subscribeOn(Schedulers.io())
                     .subscribe();
 
-            employeeDao.getAll()
+            App.getInstance(context).taskDao().getAll()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::setData);
         });
@@ -63,7 +60,14 @@ public class DbAdapter extends RecyclerView.Adapter<DbAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
+        if (mEmployees == null) {
+            return 0;
+        }
         return mEmployees.size();
+    }
+
+    public List<Employee> getEmployees() {
+        return mEmployees;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

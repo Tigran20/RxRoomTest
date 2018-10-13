@@ -1,27 +1,27 @@
 package com.example.system.testroom.bd;
 
-import android.app.Application;
+import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
+import android.arch.persistence.room.RoomDatabase;
+import android.content.Context;
 
-public class App extends Application {
+import com.example.system.testroom.model.Employee;
 
+@Database(entities = {Employee.class}, version = 1, exportSchema = false)
+public abstract class App extends RoomDatabase {
+
+    private static final String DATABASE_NAME = "database";
     public static App instance;
-    private AppDatabase database;
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        instance = this;
-        database = Room.databaseBuilder(this, AppDatabase.class, "database")
-//                .allowMainThreadQueries()
-                .build();
-    }
-
-    public static App getInstance() {
+    public static App getInstance(Context context) {
+        if (instance == null) {
+            synchronized (new Object()) {
+                instance = Room.databaseBuilder(context.getApplicationContext(),
+                        App.class, DATABASE_NAME).build();
+            }
+        }
         return instance;
     }
 
-    public AppDatabase getDatabase() {
-        return database;
-    }
+    public abstract EmployeeDao taskDao();
 }
