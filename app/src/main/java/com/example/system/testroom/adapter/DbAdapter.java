@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import com.example.system.testroom.R;
 import com.example.system.testroom.bd.App;
+import com.example.system.testroom.bd.AppDatabase;
+import com.example.system.testroom.bd.EmployeeDao;
 import com.example.system.testroom.model.Employee;
 
 import java.util.List;
@@ -41,13 +43,16 @@ public class DbAdapter extends RecyclerView.Adapter<DbAdapter.ViewHolder> {
         holder.name.setText(employee.getName());
         holder.salary.setText(String.valueOf(employee.getSalary()));
 
+        AppDatabase db = App.getInstance().getDatabase();
+        EmployeeDao employeeDao = db.employeeDao();
+
         holder.delete.setOnClickListener(view -> {
-            Completable.fromAction(() -> App.getInstance(context).taskDao()
+            Completable.fromAction(() -> employeeDao
                     .delete(employee))
                     .subscribeOn(Schedulers.io())
                     .subscribe();
 
-            App.getInstance(context).taskDao().getAll()
+            employeeDao.getAll()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::setData);
         });

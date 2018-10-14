@@ -1,5 +1,6 @@
 package com.example.system.testroom.bd;
 
+import android.app.Application;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
@@ -7,21 +8,26 @@ import android.content.Context;
 
 import com.example.system.testroom.model.Employee;
 
-@Database(entities = {Employee.class}, version = 1, exportSchema = false)
-public abstract class App extends RoomDatabase {
+
+public class App extends Application {
 
     private static final String DATABASE_NAME = "database";
     public static App instance;
+    private AppDatabase database;
 
-    public static App getInstance(Context context) {
-        if (instance == null) {
-            synchronized (new Object()) {
-                instance = Room.databaseBuilder(context.getApplicationContext(),
-                        App.class, DATABASE_NAME).build();
-            }
-        }
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        instance = this;
+        database = Room.databaseBuilder(this, AppDatabase.class, DATABASE_NAME)
+                .build();
+    }
+
+    public static App getInstance() {
         return instance;
     }
 
-    public abstract EmployeeDao taskDao();
+    public AppDatabase getDatabase() {
+        return database;
+    }
 }

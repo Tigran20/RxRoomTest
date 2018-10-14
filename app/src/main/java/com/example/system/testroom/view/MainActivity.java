@@ -9,6 +9,8 @@ import android.support.v7.widget.RecyclerView;
 import com.example.system.testroom.R;
 import com.example.system.testroom.adapter.DbAdapter;
 import com.example.system.testroom.bd.App;
+import com.example.system.testroom.bd.AppDatabase;
+import com.example.system.testroom.bd.EmployeeDao;
 import com.example.system.testroom.model.Employee;
 
 import io.reactivex.Completable;
@@ -31,9 +33,12 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         FloatingActionButton floatingActionButton = findViewById(R.id.fab);
 
+        AppDatabase db = App.getInstance().getDatabase();
+        EmployeeDao employeeDao = db.employeeDao();
+
         adapter = new DbAdapter(this);
 
-        App.getInstance(this).taskDao().getAll()
+        employeeDao.getAll()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(newData -> {
                     adapter.getEmployees();
@@ -50,12 +55,12 @@ public class MainActivity extends AppCompatActivity {
             employee.setName("Alex Troy");
             employee.setSalary(23);
 
-            Completable.fromAction(() -> App.getInstance(this).taskDao()
+            Completable.fromAction(() -> employeeDao
                     .insert(employee))
                     .subscribeOn(Schedulers.io())
                     .subscribe();
 
-            App.getInstance(this).taskDao().getAll()
+            employeeDao.getAll()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(newData -> {
                         adapter.getEmployees();
